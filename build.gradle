@@ -1,0 +1,37 @@
+plugins {
+    id 'java'
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
+}
+
+group 'youyihj.modfilereader'
+version '1.0'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'com.beust:jcommander:1.82'
+    implementation 'com.google.code.gson:gson:2.10'
+    implementation 'org.apache.httpcomponents:httpclient:4.5.13'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.0'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+shadowJar {
+
+}
+
+jar {
+    manifest {
+        attributes(
+                "Main-Class": "youyihj.modfilereader.Main",
+                "Implementation-Title": "Gradle"
+        )
+    }
+}

@@ -1,5 +1,7 @@
 package youyihj.modfilereader.mods;
 
+import java.util.Objects;
+
 /**
  * @author youyihj
  */
@@ -40,37 +42,17 @@ public class ModEntry {
         this.url = url;
     }
 
-    public boolean equals(final Object o) {
-        if (o == this) return true;
-        if (!(o instanceof ModEntry)) return false;
-        final ModEntry other = (ModEntry) o;
-        if (!other.canEqual((Object) this)) return false;
-        final Object this$fileName = this.getFileName();
-        final Object other$fileName = other.getFileName();
-        if (this$fileName == null ? other$fileName != null : !this$fileName.equals(other$fileName)) return false;
-        final Object this$modName = this.getModName();
-        final Object other$modName = other.getModName();
-        if (this$modName == null ? other$modName != null : !this$modName.equals(other$modName)) return false;
-        final Object this$url = this.getUrl();
-        final Object other$url = other.getUrl();
-        if (this$url == null ? other$url != null : !this$url.equals(other$url)) return false;
-        return true;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ModEntry modEntry = (ModEntry) o;
+        return Objects.equals(fileName, modEntry.fileName) && Objects.equals(modName, modEntry.modName) && Objects.equals(url, modEntry.url);
     }
 
-    protected boolean canEqual(final Object other) {
-        return other instanceof ModEntry;
-    }
-
+    @Override
     public int hashCode() {
-        final int PRIME = 59;
-        int result = 1;
-        final Object $fileName = this.getFileName();
-        result = result * PRIME + ($fileName == null ? 43 : $fileName.hashCode());
-        final Object $modName = this.getModName();
-        result = result * PRIME + ($modName == null ? 43 : $modName.hashCode());
-        final Object $url = this.getUrl();
-        result = result * PRIME + ($url == null ? 43 : $url.hashCode());
-        return result;
+        return Objects.hash(fileName, modName, url);
     }
 
     public String toString() {

@@ -61,7 +61,9 @@ public class CurseModGetter implements IModUrlGetter {
             if (Character.isUpperCase(charAt)) {
                 sb.append(splitStr);
             }
-            sb.append(charAt);
+            if (Character.isLetterOrDigit(charAt)) {
+                sb.append(charAt);
+            }
         }
         return sb.toString().toLowerCase(Locale.ENGLISH);
     }

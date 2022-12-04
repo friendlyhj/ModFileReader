@@ -24,6 +24,13 @@ public class CommonCNMods implements IModUrlGetter {
         add("Kiwi", "https://www.curseforge.com/minecraft/mc-mods/kiwi");
         add("touhoulittlemaid", "https://www.mcbbs.net/thread-882845-1-1.html");
         add("zenutils", "https://www.curseforge.com/minecraft/mc-mods/zenutil");
+        add("TofuCraftReload", "https://www.mcbbs.net/thread-946310-1-1.html");
+        add("mmlib", "https://www.curseforge.com/minecraft/mc-mods/mysterious-mountain-lib");
+        add("sakura", "https://www.mcbbs.net/thread-895337-1-1.html");
+        add("Sakura", "https://www.mcbbs.net/thread-895337-1-1.html");
+        add("!mixinbooter", "https://www.curseforge.com/minecraft/mc-mods/mixin-booter");
+        add("multiblocked", "https://www.curseforge.com/minecraft/mc-mods/multiblocked");
+        add("Multiblocked", "https://www.curseforge.com/minecraft/mc-mods/multiblocked");
     }
 
     public  void add(String mod, String url) {

@@ -9,7 +9,6 @@ public class Main {
     public static void main(String[] args) throws Exception {
         ModFileReader modFileReader = new ModFileReader(args);
         modFileReader.readMods();
-        modFileReader.readURL();
-        modFileReader.output();
+        modFileReader.readURLAndOutput();
     }
 }

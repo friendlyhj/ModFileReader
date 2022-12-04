@@ -13,9 +13,11 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -28,15 +30,13 @@ public class ModFileReader {
 
     private final ModUrlGetterRegistry getterRegistry = new ModUrlGetterRegistry();
 
-    private final ExecutorService executor = Executors.newFixedThreadPool(5);
-
     public ModFileReader(String[] args) {
         this.arguments = new Arguments();
         this.commander = JCommander.newBuilder().args(args).addObject(arguments).console(new DefaultConsole(System.out)).build();
         init();
     }
 
-    public synchronized void readMods() throws IOException {
+    public void readMods() throws IOException {
         Files.walkFileTree(Paths.get(arguments.getModDir()), new SimpleFileVisitor<Path>() {
             @Override
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
@@ -58,34 +58,32 @@ public class ModFileReader {
     }
 
     public String getModName(String fileName) {
-        // removes [xxx] prefix
-        if (fileName.startsWith("[")) {
-            int index = fileName.indexOf("]");
-            if (index != -1) {
-                fileName = fileName.substring(index + 1);
-            }
+        Pattern pattern = Pattern.compile("([\\w\\-+_' ]+)[-+_ ]");
+        Matcher matcher = pattern.matcher(fileName);
+        if (matcher.find()) {
+            return matcher.group(1);
         }
-        String[] split = fileName.split("[-+_ ]");
-        StringBuilder sb = new StringBuilder();
-        for (String s : split) {
-            if (s.contains(".")) break; // version
-            sb.append(s);
-        }
-        return sb.toString();
+        return fileName;
     }
 
-    public void readURL() {
-        for (ModEntry mod : mods) {
-            executor.submit(new ReadURLCaller(mod));
-        }
+    public void readURLAndOutput() {
+        ExecutorService executor = Executors.newFixedThreadPool(5);
+        CompletableFuture<Void> run = CompletableFuture.allOf(
+                mods.stream()
+                        .map(ReadURLTask::new)
+                        .map(caller -> CompletableFuture.runAsync(caller, executor))
+                        .toArray(CompletableFuture[]::new)
+        );
+        run.thenAccept((result) -> this.output());
         executor.shutdown();
     }
 
-    public synchronized void output() throws IOException, InterruptedException {
-        while (!executor.isTerminated()) {
-            this.wait(1000);
+    public void output() {
+        try {
+            Files.write(Paths.get(arguments.getOutputTxt()), mods.stream().map(ModEntry::dump).collect(Collectors.toList()), StandardCharsets.UTF_8, StandardOpenOption.WRITE, StandardOpenOption.CREATE);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        Files.write(Paths.get(arguments.getOutputTxt()), mods.stream().map(ModEntry::dump).collect(Collectors.toList()), StandardCharsets.UTF_8, StandardOpenOption.WRITE, StandardOpenOption.CREATE);
     }
 
     private void init() {
@@ -108,20 +106,19 @@ public class ModFileReader {
         return this.mods;
     }
 
-    private class ReadURLCaller implements Callable<Void> {
+    private class ReadURLTask implements Runnable {
         private final ModEntry mod;
 
-        public ReadURLCaller(ModEntry modEntry) {
+        public ReadURLTask(ModEntry modEntry) {
             this.mod = modEntry;
         }
 
         @Override
-        public Void call() {
+        public void run() {
             commander.getConsole().println("Reading URL for " + mod.getFileName());
             mod.setModName(getModName(mod.getFileName()));
             String modName = mod.getModName();
             getterRegistry.readURL(modName).ifPresent(mod::setUrl);
-            return null;
         }
     }
 }

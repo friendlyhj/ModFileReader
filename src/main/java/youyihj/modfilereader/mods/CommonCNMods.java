@@ -33,7 +33,7 @@ public class CommonCNMods implements IModUrlGetter {
         add("Multiblocked", "https://www.curseforge.com/minecraft/mc-mods/multiblocked");
     }
 
-    public  void add(String mod, String url) {
+    public void add(String mod, String url) {
         mods.put(mod, url);
     }
 

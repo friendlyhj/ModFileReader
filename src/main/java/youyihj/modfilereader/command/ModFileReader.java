@@ -24,6 +24,8 @@ import java.util.stream.Collectors;
  * @author youyihj
  */
 public class ModFileReader {
+    private static final Pattern MOD_NAME_REGEX = Pattern.compile("([\\w\\-+_' ]{2,})[\\-+_ ]");
+
     private final JCommander commander;
     private final Arguments arguments;
     private final List<ModEntry> mods = new ArrayList<>();
@@ -58,8 +60,7 @@ public class ModFileReader {
     }
 
     public String getModName(String fileName) {
-        Pattern pattern = Pattern.compile("([\\w\\-+_' ]+)[-+_ ]");
-        Matcher matcher = pattern.matcher(fileName);
+        Matcher matcher = MOD_NAME_REGEX.matcher(fileName);
         if (matcher.find()) {
             return matcher.group(1);
         }

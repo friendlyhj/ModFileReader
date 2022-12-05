@@ -31,7 +31,8 @@ jar {
     manifest {
         attributes(
                 "Main-Class": "youyihj.modfilereader.Main",
-                "Implementation-Title": "Gradle"
+                "Implementation-Title": "Gradle",
+                "CurseForge-ApiKey": System.getenv("CURSE_API_KEY")
         )
     }
 }

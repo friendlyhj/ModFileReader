@@ -11,11 +11,14 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicHeader;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.Function;
+import java.util.jar.JarFile;
 import java.util.stream.Collectors;
 
 /**
@@ -23,21 +26,34 @@ import java.util.stream.Collectors;
  */
 public class CurseModGetter implements IModUrlGetter {
     private static final String SEARCH_URL = "https://api.curseforge.com/v1/mods/search";
-    private static final String API_KEY = "$2a$10$Xny6cCEkpta81ShMef2m2uDPjzhqLY7SpGWjwbmNM88qoTPZyeB16";
+    private static final String API_KEY;
     private static final int MINECRAFT_GAME_ID = 432;
     private static final int SORT_BY_NAME = 4;
     private static final String DESCENDING = "desc";
-    private static final CloseableHttpClient CLIENT = HttpClientBuilder.create()
-            .setDefaultHeaders(Arrays.asList(
-                    new BasicHeader("Accept", "application/json"),
-                    new BasicHeader("x-api-key", API_KEY)
-            ))
-            .setDefaultRequestConfig(RequestConfig.custom().setConnectionRequestTimeout(1000).build())
-            .build();
+    private static final CloseableHttpClient CLIENT;
     private static final Gson GSON = new GsonBuilder().create();
-
     private final Function<String, String> slugProcessor;
     private final int priority;
+
+    static {
+        String key = System.getenv("CURSE_API_KEY");
+        if (key == null) {
+            try {
+                JarFile jar = new JarFile(new File(CurseModGetter.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()));
+                key = jar.getManifest().getMainAttributes().getValue("CurseForge-ApiKey");
+            } catch (IOException | URISyntaxException e) {
+                throw new RuntimeException("Failed to read curse api key", e);
+            }
+        }
+        API_KEY = key;
+        CLIENT = HttpClientBuilder.create()
+                .setDefaultHeaders(Arrays.asList(
+                        new BasicHeader("Accept", "application/json"),
+                        new BasicHeader("x-api-key", API_KEY)
+                ))
+                .setDefaultRequestConfig(RequestConfig.custom().setConnectionRequestTimeout(1000).build())
+                .build();
+    }
 
     public CurseModGetter(Function<String, String> slugProcessor, int priority) {
         this.slugProcessor = slugProcessor;

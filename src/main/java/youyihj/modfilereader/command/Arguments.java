@@ -15,6 +15,9 @@ public class Arguments {
     @Parameter(names = "-curse", description = "Calls CurseForge API to try to get url of mods, may take much time")
     private boolean curse;
 
+    @Parameter(names = "-threads", description = "The count of threads to get url of mods. Max: 20")
+    private int threads = 5;
+
     public Arguments() {
     }
 
@@ -42,37 +45,15 @@ public class Arguments {
         this.curse = curse;
     }
 
-    public boolean equals(final Object o) {
-        if (o == this) return true;
-        if (!(o instanceof Arguments)) return false;
-        final Arguments other = (Arguments) o;
-        if (!other.canEqual((Object) this)) return false;
-        final Object this$modDir = this.getModDir();
-        final Object other$modDir = other.getModDir();
-        if (this$modDir == null ? other$modDir != null : !this$modDir.equals(other$modDir)) return false;
-        final Object this$outputTxt = this.getOutputTxt();
-        final Object other$outputTxt = other.getOutputTxt();
-        if (this$outputTxt == null ? other$outputTxt != null : !this$outputTxt.equals(other$outputTxt)) return false;
-        if (this.isCurse() != other.isCurse()) return false;
-        return true;
-    }
-
-    protected boolean canEqual(final Object other) {
-        return other instanceof Arguments;
-    }
-
-    public int hashCode() {
-        final int PRIME = 59;
-        int result = 1;
-        final Object $modDir = this.getModDir();
-        result = result * PRIME + ($modDir == null ? 43 : $modDir.hashCode());
-        final Object $outputTxt = this.getOutputTxt();
-        result = result * PRIME + ($outputTxt == null ? 43 : $outputTxt.hashCode());
-        result = result * PRIME + (this.isCurse() ? 79 : 97);
-        return result;
-    }
-
     public String toString() {
         return "Arguments(modDir=" + this.getModDir() + ", outputTxt=" + this.getOutputTxt() + ", curse=" + this.isCurse() + ")";
+    }
+
+    public int getThreads() {
+        return threads < 1 ? 1 : Math.min(threads, 20);
+    }
+
+    public void setThreads(int threads) {
+        this.threads = threads;
     }
 }

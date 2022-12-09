@@ -7,8 +7,10 @@ import youyihj.modfilereader.command.ModFileReader;
  */
 public class Main {
     public static void main(String[] args) throws Exception {
-        ModFileReader modFileReader = new ModFileReader(args);
-        modFileReader.readMods();
-        modFileReader.readURLAndOutput();
+        ModFileReader modFileReader = ModFileReader.withArgs(args);
+        if (modFileReader != null) {
+            modFileReader.readMods();
+            modFileReader.readURLAndOutput();
+        }
     }
 }

@@ -1,6 +1,7 @@
 package youyihj.modfilereader.command;
 
 import com.beust.jcommander.JCommander;
+import com.beust.jcommander.ParameterException;
 import com.beust.jcommander.internal.DefaultConsole;
 import youyihj.modfilereader.mods.CommonCNMods;
 import youyihj.modfilereader.mods.CurseModGetter;
@@ -24,7 +25,7 @@ import java.util.stream.Collectors;
  * @author youyihj
  */
 public class ModFileReader {
-    private static final Pattern MOD_NAME_REGEX = Pattern.compile("([\\w\\-+_' ]{2,})[\\-+_ ]");
+    private static final Pattern MOD_NAME_REGEX = Pattern.compile("([a-zA-Z0-9][\\w\\-+_' ]+)[\\-+_ ]");
 
     private final JCommander commander;
     private final Arguments arguments;
@@ -32,10 +33,21 @@ public class ModFileReader {
 
     private final ModUrlGetterRegistry getterRegistry = new ModUrlGetterRegistry();
 
-    public ModFileReader(String[] args) {
-        this.arguments = new Arguments();
-        this.commander = JCommander.newBuilder().args(args).addObject(arguments).console(new DefaultConsole(System.out)).build();
-        init();
+    private ModFileReader(JCommander commander, Arguments arguments) {
+        this.commander = commander;
+        this.arguments = arguments;
+    }
+
+    public static ModFileReader withArgs(String[] args) {
+        try {
+            Arguments arguments = new Arguments();
+            ModFileReader reader = new ModFileReader(JCommander.newBuilder().args(args).addObject(arguments).programName("<file name>").console(new DefaultConsole(System.out)).build(), arguments);
+            reader.init();
+            return reader;
+        } catch (ParameterException e) {
+            e.usage();
+            return null;
+        }
     }
 
     public void readMods() throws IOException {
@@ -68,7 +80,7 @@ public class ModFileReader {
     }
 
     public void readURLAndOutput() {
-        ExecutorService executor = Executors.newFixedThreadPool(5);
+        ExecutorService executor = Executors.newFixedThreadPool(arguments.getThreads());
         CompletableFuture<Void> run = CompletableFuture.allOf(
                 mods.stream()
                         .map(ReadURLTask::new)

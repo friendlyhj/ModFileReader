@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'youyihj.modfilereader'
-version '1.1'
+version '1.2'
 
 repositories {
     mavenCentral()
@@ -32,7 +32,7 @@ jar {
         attributes(
                 "Main-Class": "youyihj.modfilereader.Main",
                 "Implementation-Title": "Gradle",
-                "CurseForge-ApiKey": System.getenv("CURSE_API_KEY")
+                "CurseForge-ApiKey": System.getenv("CURSE_API_KEY") ?: ""
         )
     }
 }

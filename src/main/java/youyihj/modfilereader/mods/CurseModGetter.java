@@ -51,7 +51,7 @@ public class CurseModGetter implements IModUrlGetter {
                         new BasicHeader("Accept", "application/json"),
                         new BasicHeader("x-api-key", API_KEY)
                 ))
-                .setDefaultRequestConfig(RequestConfig.custom().setConnectionRequestTimeout(1000).build())
+                .setDefaultRequestConfig(RequestConfig.custom().setConnectionRequestTimeout(5000).build())
                 .build();
     }
 

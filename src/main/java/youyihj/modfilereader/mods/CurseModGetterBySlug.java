@@ -2,7 +2,6 @@ package youyihj.modfilereader.mods;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.stream.JsonReader;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
 
@@ -84,49 +83,5 @@ public class CurseModGetterBySlug extends CurseModGetter {
             }
         }
         return null;
-    }
-
-    public static String readWebLink(JsonReader jsonReader) throws IOException {
-        String result = null;
-        jsonReader.beginObject();
-        while (jsonReader.hasNext()) {
-            String s = jsonReader.nextName();
-            if (s.equals("data")) {
-                jsonReader.beginArray();
-                while (jsonReader.hasNext()) {
-                    jsonReader.beginObject();
-                    while (jsonReader.hasNext()) {
-                        String s1 = jsonReader.nextName();
-                        if (s1.equals("links")) {
-                            jsonReader.beginObject();
-                            while (jsonReader.hasNext()) {
-                                String s2 = jsonReader.nextName();
-                                if (s2.equals("websiteUrl")) {
-                                    if (result == null) {
-                                        result = jsonReader.nextString();
-                                    } else {
-                                        jsonReader.skipValue();
-                                    }
-                                    if (!result.contains("mc-mods")) {
-                                        result = null;
-                                    }
-                                } else {
-                                    jsonReader.skipValue();
-                                }
-                            }
-                            jsonReader.endObject();
-                        } else {
-                            jsonReader.skipValue();
-                        }
-                    }
-                    jsonReader.endObject();
-                }
-                jsonReader.endArray();
-            } else {
-                jsonReader.skipValue();
-            }
-        }
-        jsonReader.endObject();
-        return result;
     }
 }

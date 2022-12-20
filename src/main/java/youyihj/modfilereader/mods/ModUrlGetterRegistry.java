@@ -1,6 +1,5 @@
 package youyihj.modfilereader.mods;
 
-import java.io.IOException;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
@@ -16,12 +15,12 @@ public class ModUrlGetterRegistry {
         getters.add(getter);
     }
 
-    public Optional<String> readURL(String modName) {
+    public Optional<String> readURL(ModEntry modEntry) {
         for (IModUrlGetter getter : getters) {
             try {
-                Optional<String> result = getter.get(modName);
+                Optional<String> result = getter.get(modEntry);
                 if (result.isPresent()) return result;
-            } catch (IOException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }

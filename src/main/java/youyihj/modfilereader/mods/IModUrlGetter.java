@@ -7,7 +7,7 @@ import java.util.Optional;
  * @author youyihj
  */
 public interface IModUrlGetter extends Comparable<IModUrlGetter> {
-    Optional<String> get(String modName) throws IOException;
+    Optional<String> get(ModEntry mod) throws IOException;
 
     int priority();
 

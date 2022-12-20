@@ -37,8 +37,8 @@ public class CommonCNMods implements IModUrlGetter {
         mods.put(mod, url);
     }
 
-    public Optional<String> get(String mod) {
-        return Optional.ofNullable(mods.get(mod));
+    public Optional<String> get(ModEntry mod) {
+        return Optional.ofNullable(mods.get(mod.getModName()));
     }
 
     @Override

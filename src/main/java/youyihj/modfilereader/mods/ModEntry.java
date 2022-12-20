@@ -1,5 +1,6 @@
 package youyihj.modfilereader.mods;
 
+import java.nio.file.Path;
 import java.util.Objects;
 
 /**
@@ -7,14 +8,16 @@ import java.util.Objects;
  */
 public class ModEntry {
     private final String fileName;
+    private final Path path;
     private String modName;
     private String url;
 
-    private ModEntry(String fileName) {
-        this.fileName = fileName;
+    private ModEntry(Path path) {
+        this.fileName = path.getFileName().toString();
+        this.path = path;
     }
 
-    public static ModEntry of(String fileName) {
+    public static ModEntry of(Path fileName) {
         return new ModEntry(fileName);
     }
 
@@ -32,6 +35,10 @@ public class ModEntry {
 
     public String getUrl() {
         return this.url;
+    }
+
+    public Path getPath() {
+        return path;
     }
 
     public void setModName(String modName) {

@@ -1,0 +1,132 @@
+package youyihj.modfilereader.mods;
+
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.stream.JsonReader;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.methods.HttpGet;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+/**
+ * @author youyihj
+ */
+public class CurseModGetterBySlug extends CurseModGetter {
+    private static final String SEARCH_URL = "https://api.curseforge.com/v1/mods/search";
+    private static final int MINECRAFT_GAME_ID = 432;
+    private static final int SORT_BY_NAME = 4;
+    private static final String DESCENDING = "desc";
+    private final Function<String, String> slugProcessor;
+    private final int priority;
+
+    public CurseModGetterBySlug(Function<String, String> slugProcessor, int priority) {
+        this.slugProcessor = slugProcessor;
+        this.priority = priority;
+    }
+
+    @Override
+    public Optional<String> get(ModEntry mod) throws IOException {
+        return Optional.ofNullable(readInternal(slugProcessor.apply(mod.getModName())));
+    }
+
+    @Override
+    public int priority() {
+        return priority;
+    }
+
+    public static String spiltBy(String s, String splitStr) {
+        StringBuilder sb = new StringBuilder(s.substring(0, 1));
+        for (int i = 1; i < s.length(); i++) {
+            char charAt = s.charAt(i);
+            if (Character.isUpperCase(charAt)) {
+                sb.append(splitStr);
+            }
+            if (Character.isLetterOrDigit(charAt)) {
+                sb.append(charAt);
+            }
+        }
+        return sb.toString().toLowerCase(Locale.ENGLISH);
+    }
+
+    private static String readInternal(String modSlug) throws IOException {
+        return CURSE_FORGE_CLIENT.execute(new HttpGet(buildSearchURL(modSlug)), response -> {
+            if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
+                throw new IOException("Status: " + response.getStatusLine().getStatusCode());
+            }
+//            return new String(IOUtils.readAllBytes(response.getEntity().getContent()), StandardCharsets.UTF_8);
+            return getWebLink(toJson(response.getEntity().getContent()));
+        });
+    }
+
+    public static String buildSearchURL(String modName) {
+        Map<String, String> parameters = new HashMap<>();
+        parameters.put("slug", modName);
+        parameters.put("gameId", String.valueOf(MINECRAFT_GAME_ID));
+        parameters.put("ModsSearchSortField", String.valueOf(SORT_BY_NAME));
+        parameters.put("sortOrder", DESCENDING);
+        parameters.put("index", String.valueOf(0));
+        return parameters.entrySet().stream()
+                .map(entry -> entry.getKey() + "=" + entry.getValue())
+                .collect(Collectors.joining("&", SEARCH_URL + "?", ""));
+    }
+
+    public static String getWebLink(JsonObject jsonObject) {
+        for (JsonElement data : jsonObject.getAsJsonArray("data")) {
+            String result = data.getAsJsonObject().getAsJsonObject("links").get("websiteUrl").getAsString();
+            if (result.contains("mc-mods")) {
+                return result;
+            }
+        }
+        return null;
+    }
+
+    public static String readWebLink(JsonReader jsonReader) throws IOException {
+        String result = null;
+        jsonReader.beginObject();
+        while (jsonReader.hasNext()) {
+            String s = jsonReader.nextName();
+            if (s.equals("data")) {
+                jsonReader.beginArray();
+                while (jsonReader.hasNext()) {
+                    jsonReader.beginObject();
+                    while (jsonReader.hasNext()) {
+                        String s1 = jsonReader.nextName();
+                        if (s1.equals("links")) {
+                            jsonReader.beginObject();
+                            while (jsonReader.hasNext()) {
+                                String s2 = jsonReader.nextName();
+                                if (s2.equals("websiteUrl")) {
+                                    if (result == null) {
+                                        result = jsonReader.nextString();
+                                    } else {
+                                        jsonReader.skipValue();
+                                    }
+                                    if (!result.contains("mc-mods")) {
+                                        result = null;
+                                    }
+                                } else {
+                                    jsonReader.skipValue();
+                                }
+                            }
+                            jsonReader.endObject();
+                        } else {
+                            jsonReader.skipValue();
+                        }
+                    }
+                    jsonReader.endObject();
+                }
+                jsonReader.endArray();
+            } else {
+                jsonReader.skipValue();
+            }
+        }
+        jsonReader.endObject();
+        return result;
+    }
+}

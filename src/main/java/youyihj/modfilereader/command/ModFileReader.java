@@ -3,10 +3,7 @@ package youyihj.modfilereader.command;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
 import com.beust.jcommander.internal.DefaultConsole;
-import youyihj.modfilereader.mods.CommonCNMods;
-import youyihj.modfilereader.mods.CurseModGetter;
-import youyihj.modfilereader.mods.ModEntry;
-import youyihj.modfilereader.mods.ModUrlGetterRegistry;
+import youyihj.modfilereader.mods.*;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -54,9 +51,8 @@ public class ModFileReader {
         Files.walkFileTree(Paths.get(arguments.getModDir()), new SimpleFileVisitor<Path>() {
             @Override
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
-                String fileName = file.getFileName().toString();
-                if (fileName.endsWith(".jar")) {
-                    mods.add(ModEntry.of(fileName));
+                if (file.getFileName().toString().endsWith(".jar")) {
+                    mods.add(ModEntry.of(file));
                 }
                 return FileVisitResult.CONTINUE;
             }
@@ -102,8 +98,9 @@ public class ModFileReader {
     private void init() {
         getterRegistry.register(new CommonCNMods());
         if (arguments.isCurse()) {
-            getterRegistry.register(new CurseModGetter(s -> CurseModGetter.spiltBy(s, ""), 50));
-            getterRegistry.register(new CurseModGetter(s -> CurseModGetter.spiltBy(s, "-"), 49));
+            getterRegistry.register(new CurseModGetterBySlug(s -> CurseModGetterBySlug.spiltBy(s, ""), 50));
+            getterRegistry.register(new CurseModGetterBySlug(s -> CurseModGetterBySlug.spiltBy(s, "-"), 49));
+            getterRegistry.register(new CurseModGetterByFigurePrint());
         }
     }
 
@@ -130,8 +127,7 @@ public class ModFileReader {
         public void run() {
             commander.getConsole().println("Reading URL for " + mod.getFileName());
             mod.setModName(getModName(mod.getFileName()));
-            String modName = mod.getModName();
-            getterRegistry.readURL(modName).ifPresent(mod::setUrl);
+            getterRegistry.readURL(mod).ifPresent(mod::setUrl);
         }
     }
 }

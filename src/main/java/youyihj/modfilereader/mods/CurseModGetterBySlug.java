@@ -3,15 +3,13 @@ package youyihj.modfilereader.mods;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import org.apache.http.HttpStatus;
-import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.methods.RequestBuilder;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * @author youyihj
@@ -54,7 +52,7 @@ public class CurseModGetterBySlug extends CurseModGetter {
     }
 
     private static String readInternal(String modSlug) throws IOException {
-        return CURSE_FORGE_CLIENT.execute(new HttpGet(buildSearchURL(modSlug)), response -> {
+        return CURSE_FORGE_CLIENT.execute(buildSearchRequest(modSlug), response -> {
             if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
                 throw new IOException("Status: " + response.getStatusLine().getStatusCode());
             }
@@ -63,16 +61,14 @@ public class CurseModGetterBySlug extends CurseModGetter {
         });
     }
 
-    public static String buildSearchURL(String modName) {
-        Map<String, String> parameters = new HashMap<>();
-        parameters.put("slug", modName);
-        parameters.put("gameId", String.valueOf(MINECRAFT_GAME_ID));
-        parameters.put("ModsSearchSortField", String.valueOf(SORT_BY_NAME));
-        parameters.put("sortOrder", DESCENDING);
-        parameters.put("index", String.valueOf(0));
-        return parameters.entrySet().stream()
-                .map(entry -> entry.getKey() + "=" + entry.getValue())
-                .collect(Collectors.joining("&", SEARCH_URL + "?", ""));
+    public static HttpUriRequest buildSearchRequest(String modName) {
+        return RequestBuilder.get(SEARCH_URL)
+                .addParameter("slug", modName)
+                .addParameter("gameId", String.valueOf(MINECRAFT_GAME_ID))
+                .addParameter("ModsSearchSortField", String.valueOf(SORT_BY_NAME))
+                .addParameter("sortOrder", DESCENDING)
+                .addParameter("index", "0")
+                .build();
     }
 
     public static String getWebLink(JsonObject jsonObject) {

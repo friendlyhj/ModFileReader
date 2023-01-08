@@ -12,7 +12,6 @@ import youyihj.modfilereader.util.MurmurHash;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.Optional;
 
 /**
@@ -54,7 +53,7 @@ public class CurseModGetterByFigurePrint extends CurseModGetter {
                 bytes[index++] = b;
             }
         }
-        return Integer.toUnsignedString(MurmurHash.hash32(Arrays.copyOf(bytes, index), index, 1));
+        return Integer.toUnsignedString(MurmurHash.hash32(bytes, index, 1));
     }
 
     private static int getCurseProjectId(JsonObject object) {

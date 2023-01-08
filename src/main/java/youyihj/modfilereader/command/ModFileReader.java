@@ -97,10 +97,11 @@ public class ModFileReader {
 
     private void init() {
         getterRegistry.register(new CommonCNMods());
-        if (arguments.isCurse()) {
+        if (arguments.isAll()) {
             getterRegistry.register(new CurseModGetterBySlug(s -> CurseModGetterBySlug.spiltBy(s, ""), 50));
             getterRegistry.register(new CurseModGetterBySlug(s -> CurseModGetterBySlug.spiltBy(s, "-"), 49));
             getterRegistry.register(new CurseModGetterByFigurePrint());
+            getterRegistry.register(new ModrinthSearchGetter());
         }
     }
 

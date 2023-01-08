@@ -12,8 +12,8 @@ public class Arguments {
     @Parameter(names = "-output", description = "The path of output file")
     private String outputTxt = "outputs.txt";
 
-    @Parameter(names = "-curse", description = "Calls CurseForge API to try to get url of mods, may take much time")
-    private boolean curse;
+    @Parameter(names = {"-curse", "-all"}, description = "Calls CurseForge and Modrinth API to try to get url of mods, may take much time")
+    private boolean all;
 
     @Parameter(names = "-threads", description = "The count of threads to get url of mods. Max: 20")
     private int threads = 5;
@@ -29,8 +29,8 @@ public class Arguments {
         return this.outputTxt;
     }
 
-    public boolean isCurse() {
-        return this.curse;
+    public boolean isAll() {
+        return this.all;
     }
 
     public void setModDir(String modDir) {
@@ -41,12 +41,12 @@ public class Arguments {
         this.outputTxt = outputTxt;
     }
 
-    public void setCurse(boolean curse) {
-        this.curse = curse;
+    public void setAll(boolean all) {
+        this.all = all;
     }
 
     public String toString() {
-        return "Arguments(modDir=" + this.getModDir() + ", outputTxt=" + this.getOutputTxt() + ", curse=" + this.isCurse() + ")";
+        return "Arguments(modDir=" + this.getModDir() + ", outputTxt=" + this.getOutputTxt() + ", all=" + this.isAll() + ")";
     }
 
     public int getThreads() {

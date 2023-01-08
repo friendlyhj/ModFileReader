@@ -4,6 +4,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
+import youyihj.modfilereader.util.JsonUtil;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -59,7 +60,7 @@ public class CurseModGetterBySlug extends CurseModGetter {
                 throw new IOException("Status: " + response.getStatusLine().getStatusCode());
             }
 //            return new String(IOUtils.readAllBytes(response.getEntity().getContent()), StandardCharsets.UTF_8);
-            return getWebLink(toJson(response.getEntity().getContent()));
+            return getWebLink(JsonUtil.read(response.getEntity().getContent()));
         });
     }
 

@@ -7,6 +7,7 @@ import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
+import youyihj.modfilereader.util.JsonUtil;
 import youyihj.modfilereader.util.MurmurHash;
 
 import java.io.IOException;
@@ -34,13 +35,13 @@ public class CurseModGetterByFigurePrint extends CurseModGetter {
             if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
                 throw new IOException("Status: " + response.getStatusLine().getStatusCode());
             }
-            return getCurseProjectId(toJson(response.getEntity().getContent()));
+            return getCurseProjectId(JsonUtil.read(response.getEntity().getContent()));
         });
         return CURSE_FORGE_CLIENT.execute(new HttpGet(MODS_URL + projectId), response -> {
             if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
                 throw new IOException("Status: " + response.getStatusLine().getStatusCode());
             }
-            return getWebsiteUrl(toJson(response.getEntity().getContent()));
+            return getWebsiteUrl(JsonUtil.read(response.getEntity().getContent()));
         });
     }
 

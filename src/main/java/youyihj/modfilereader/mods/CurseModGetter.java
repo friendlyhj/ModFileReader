@@ -1,16 +1,13 @@
 package youyihj.modfilereader.mods;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonObject;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicHeader;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.jar.JarFile;
 
@@ -19,7 +16,6 @@ import java.util.jar.JarFile;
  */
 public abstract class CurseModGetter implements IModUrlGetter {
     protected static final CloseableHttpClient CURSE_FORGE_CLIENT;
-    protected static final Gson GSON = new GsonBuilder().create();
 
     static {
         String key = System.getenv("CURSE_API_KEY");
@@ -38,9 +34,5 @@ public abstract class CurseModGetter implements IModUrlGetter {
                 ))
                 .setDefaultRequestConfig(RequestConfig.custom().setConnectionRequestTimeout(5000).build())
                 .build();
-    }
-
-    protected static JsonObject toJson(InputStream inputStream) {
-        return GSON.fromJson(new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8)), JsonObject.class);
     }
 }

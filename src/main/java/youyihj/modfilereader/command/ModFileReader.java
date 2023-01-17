@@ -11,9 +11,8 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -27,6 +26,9 @@ public class ModFileReader {
     private final JCommander commander;
     private final Arguments arguments;
     private final List<ModEntry> mods = new ArrayList<>();
+    private final List<ModEntry> retryMods = new CopyOnWriteArrayList<>();
+    private int size = 0;
+    private final AtomicInteger index = new AtomicInteger();
 
     private final ModUrlGetterRegistry getterRegistry = new ModUrlGetterRegistry();
 
@@ -53,6 +55,7 @@ public class ModFileReader {
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
                 if (file.getFileName().toString().endsWith(".jar")) {
                     mods.add(ModEntry.of(file));
+                    size += 1;
                 }
                 return FileVisitResult.CONTINUE;
             }
@@ -77,17 +80,31 @@ public class ModFileReader {
 
     public void readURLAndOutput() {
         ExecutorService executor = Executors.newFixedThreadPool(arguments.getThreads());
-        CompletableFuture<Void> run = CompletableFuture.allOf(
-                mods.stream()
+        CompletableFuture<Void> run = readModUrl(mods, executor);
+        if (arguments.isCurse()) {
+            run = run.thenAccept(result -> {
+                size = retryMods.size();
+                commander.getConsole().println("Failed to get url for " + size + " mods. Try again...");
+                index.set(0);
+            });
+        }
+        run.thenApplyAsync(result -> readModUrl(retryMods, executor).thenAccept(it -> {
+            output();
+            executor.shutdown();
+        }));
+    }
+
+    private CompletableFuture<Void> readModUrl(List<ModEntry> entries, Executor executor) {
+        return CompletableFuture.allOf(
+                entries.stream()
                         .map(ReadURLTask::new)
                         .map(caller -> CompletableFuture.runAsync(caller, executor))
                         .toArray(CompletableFuture[]::new)
         );
-        run.thenAccept((result) -> this.output());
-        executor.shutdown();
     }
 
     public void output() {
+        commander.getConsole().println("Successful!");
         try {
             Files.write(Paths.get(arguments.getOutputTxt()), mods.stream().map(ModEntry::dump).collect(Collectors.toList()), StandardCharsets.UTF_8, StandardOpenOption.WRITE, StandardOpenOption.CREATE);
         } catch (IOException e) {
@@ -125,9 +142,9 @@ public class ModFileReader {
 
         @Override
         public void run() {
-            commander.getConsole().println("Reading URL for " + mod.getFileName());
+            commander.getConsole().println("Reading URL for " + mod.getFileName() + " (" + index.incrementAndGet() + "/" + size + ")");
             mod.setModName(getModName(mod.getFileName()));
-            getterRegistry.readURL(mod).ifPresent(mod::setUrl);
+            getterRegistry.readURL(mod, retryMods::add).ifPresent(mod::setUrl);
         }
     }
 }

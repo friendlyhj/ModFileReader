@@ -1,5 +1,6 @@
 package youyihj.modfilereader.mods;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
@@ -14,6 +15,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
+import java.util.OptionalInt;
 
 /**
  * @author youyihj
@@ -31,13 +33,14 @@ public class CurseModGetterByFigurePrint extends CurseModGetter {
         HttpUriRequest request = RequestBuilder.post(FIGURE_PRINT_URL)
                 .setEntity(new StringEntity(String.format("{\"fingerprints\": [%s]}", figurePrint), ContentType.APPLICATION_JSON))
                 .build();
-        Integer projectId = CURSE_FORGE_CLIENT.execute(request, response -> {
+        OptionalInt projectId = CURSE_FORGE_CLIENT.execute(request, response -> {
             if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
                 throw new IOException("Status: " + response.getStatusLine().getStatusCode());
             }
             return getCurseProjectId(JsonUtil.read(response.getEntity().getContent()));
         });
-        return CURSE_FORGE_CLIENT.execute(new HttpGet(MODS_URL + projectId), response -> {
+        if (!projectId.isPresent()) return null;
+        return CURSE_FORGE_CLIENT.execute(new HttpGet(MODS_URL + projectId.getAsInt()), response -> {
             if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
                 throw new IOException("Status: " + response.getStatusLine().getStatusCode());
             }
@@ -57,8 +60,10 @@ public class CurseModGetterByFigurePrint extends CurseModGetter {
         return Integer.toUnsignedString(MurmurHash.hash32(bytes, index, 1));
     }
 
-    private static int getCurseProjectId(JsonObject object) {
-        return object.getAsJsonObject("data").getAsJsonArray("exactMatches").get(0).getAsJsonObject().getAsJsonObject("file").get("modId").getAsInt();
+    private static OptionalInt getCurseProjectId(JsonObject object) {
+        JsonArray matches = object.getAsJsonObject("data").getAsJsonArray("exactMatches");
+        if (matches.isEmpty()) return OptionalInt.empty();
+        return OptionalInt.of(matches.get(0).getAsJsonObject().getAsJsonObject("file").get("modId").getAsInt());
     }
 
     private static String getWebsiteUrl(JsonObject object) {

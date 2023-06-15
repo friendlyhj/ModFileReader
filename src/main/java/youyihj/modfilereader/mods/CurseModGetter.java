@@ -20,8 +20,7 @@ public abstract class CurseModGetter implements IModUrlGetter {
     static {
         String key = System.getenv("CURSE_API_KEY");
         if (key == null) {
-            try {
-                JarFile jar = new JarFile(new File(CurseModGetterBySlug.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()));
+            try (JarFile jar = new JarFile(new File(CurseModGetterBySlug.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()))) {
                 key = jar.getManifest().getMainAttributes().getValue("CurseForge-ApiKey");
             } catch (IOException | URISyntaxException e) {
                 throw new RuntimeException("Failed to read curse api key", e);

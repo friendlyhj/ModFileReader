@@ -12,7 +12,7 @@ public class CommonCNMods implements IModUrlGetter {
     private final Map<String, String> mods = new HashMap<>();
 
      public CommonCNMods() {
-        add("i18nupdatemod", "https://www.mcbbs.net/thread-805273-1-1.html");
+        add("i18nupdatemod", "https://www.mcbbs.net/thread-1424533-1-1.html");
         add("JustEnoughCharacters", "https://www.mcbbs.net/thread-639271-1-1.html");
         add("jecharacters", "https://www.mcbbs.net/thread-639271-1-1.html");
         add("CustomSkinLoader", "https://www.mcbbs.net/thread-269807-1-1.html");

@@ -18,6 +18,12 @@ public class Arguments {
     @Parameter(names = "-threads", description = "The count of threads to get url of mods. Max: 20")
     private int threads = 5;
 
+    @Parameter(names = {"-retry", "-retryCount"}, description = "The count of retries gotten for mod links that failed due to network issues")
+    private int retryCount = 1;
+
+    @Parameter(names = "-debug", description = "Prints error stack trace")
+    private boolean debug;
+
     public Arguments() {
     }
 
@@ -55,5 +61,21 @@ public class Arguments {
 
     public void setThreads(int threads) {
         this.threads = threads;
+    }
+
+    public int getRetryCount() {
+        return retryCount;
+    }
+
+    public void setRetryCount(int retryCount) {
+        this.retryCount = retryCount;
+    }
+
+    public boolean isDebug() {
+        return debug;
+    }
+
+    public void setDebug(boolean debug) {
+        this.debug = debug;
     }
 }

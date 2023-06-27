@@ -30,7 +30,7 @@ public class ModFileReader {
     private int size = 0;
     private final AtomicInteger index = new AtomicInteger();
 
-    private final ModUrlGetterRegistry getterRegistry = new ModUrlGetterRegistry();
+    private final ModUrlGetterRegistry getterRegistry = new ModUrlGetterRegistry(this);
 
     private ModFileReader(JCommander commander, Arguments arguments) {
         this.commander = commander;
@@ -82,16 +82,22 @@ public class ModFileReader {
         ExecutorService executor = Executors.newFixedThreadPool(arguments.getThreads());
         CompletableFuture<Void> run = readModUrl(mods, executor);
         if (arguments.isAll()) {
-            run = run.thenAccept(result -> {
-                size = retryMods.size();
-                commander.getConsole().println("Failed to get url for " + size + " mods. Try again...");
-                index.set(0);
-            });
+            for (int i = 0; i < arguments.getRetryCount(); i++) {
+                run.thenAccept(result -> {
+                    size = retryMods.size();
+                    index.set(0);
+                }).thenAcceptAsync(result -> {
+                    if (!retryMods.isEmpty()) {
+                        commander.getConsole().println("Failed to get url for " + size + " mods. Try again...");
+                        readModUrl(retryMods, executor);
+                    }
+                });
+            }
         }
-        run.thenApplyAsync(result -> readModUrl(retryMods, executor).thenAccept(it -> {
+        run.thenAccept(it -> {
             output();
             executor.shutdown();
-        }));
+        });
     }
 
     private CompletableFuture<Void> readModUrl(List<ModEntry> entries, Executor executor) {

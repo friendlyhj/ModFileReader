@@ -42,11 +42,18 @@ public class ModrinthFileHashGetter implements IModUrlGetter {
     public static String readInternal(String sha1) throws IOException {
         HttpUriRequest request = RequestBuilder.get(VERSION_FILE_URL + sha1).build();
         String projectId = CLIENT.execute(request, (response -> {
-            if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
-                throw new IOException("Status: " + response.getStatusLine().getStatusCode());
+            int statusCode = response.getStatusLine().getStatusCode();
+            if (statusCode == HttpStatus.SC_NOT_FOUND) {
+                return null;
+            }
+            if (statusCode != HttpStatus.SC_OK) {
+                throw new IOException("Status: " + statusCode);
             }
             return getProjectId(JsonUtil.read(response.getEntity().getContent()));
         }));
+        if (projectId == null) {
+            return null;
+        }
         HttpUriRequest slugRequest = RequestBuilder.get(PROJECT_URL + projectId).build();
         return CLIENT.execute(slugRequest, response -> {
             if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
